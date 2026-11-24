@@ -137,6 +137,23 @@ When releasing a change, bump the version in all of these files to the same valu
 
 Follow [Semantic Versioning](https://semver.org/). See `.agent/workflows/update-version.md` for the full checklist.
 
+### Releasing
+
+HACS needs a **GitHub Release** (not only a commit on `main`) to show a version like `v0.2.1` instead of a commit hash.
+
+```bash
+# After bumping version files and updating VERSION.md:
+git add .
+git commit -m "Release version X.Y.Z"
+git tag -a vX.Y.Z -m "Release version X.Y.Z"
+git push && git push --tags
+
+# Then publish a GitHub Release from the tag (gh example):
+gh release create vX.Y.Z --repo KrilYura/time-shifter --title "X.Y.Z" --notes-file VERSION.md
+```
+
+Or create the release manually: GitHub → **Releases** → **Draft a new release** → select tag `vX.Y.Z` → paste notes from `VERSION.md` → **Publish release**.
+
 ### File Structure
 
 ```

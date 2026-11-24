@@ -32,10 +32,42 @@ Use this workflow whenever you make changes to the integration that should resul
    - Confirm `.version`, `manifest.json`, `const.py`, and `README.md` all match
    - Review the changelog entry
 
-5. **Commit** (when the user asks)
+5. **Commit, tag, push, and release** (when the user asks)
+
    ```bash
    git add .
    git commit -m "Release version X.Y.Z"
-   git tag vX.Y.Z
+   git tag -a vX.Y.Z -m "Release version X.Y.Z"
    git push && git push --tags
    ```
+
+   Then create a **GitHub Release** for tag `vX.Y.Z` (required for HACS to show a proper semver instead of a commit hash):
+
+   ```bash
+   # Preferred when gh is available
+   gh release create vX.Y.Z \
+     --repo KrilYura/time-shifter \
+     --title "X.Y.Z" \
+     --notes-file - <<'EOF'
+   ## What's Changed
+   - Summarize from VERSION.md
+   EOF
+
+   # Or via GitHub API (when authenticated)
+   curl -X POST \
+     -H "Accept: application/vnd.github+json" \
+     -H "Authorization: Bearer $GITHUB_TOKEN" \
+     https://api.github.com/repos/KrilYura/time-shifter/releases \
+     -d '{"tag_name":"vX.Y.Z","name":"X.Y.Z","body":"...","draft":false,"prerelease":false}'
+   ```
+
+   Manual alternative: GitHub → **Releases** → **Draft a new release** → choose tag `vX.Y.Z` → paste changelog → **Publish release**.
+
+### Why tags + releases matter
+
+HACS shows a commit hash (e.g. `9914b91`) when the repo has no GitHub Releases. Always:
+
+1. Push annotated tag `vX.Y.Z`
+2. Publish a GitHub Release from that tag
+
+After publishing, refresh/redownload in HACS so it picks up `vX.Y.Z`.

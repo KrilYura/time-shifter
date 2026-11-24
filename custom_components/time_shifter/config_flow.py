@@ -1,7 +1,6 @@
 """Config flow for Time Shifter integration."""
 from __future__ import annotations
 
-import re
 from typing import Any
 
 import voluptuous as vol
@@ -15,6 +14,7 @@ from homeassistant.config_entries import (
 from homeassistant.core import callback
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers import selector
+from homeassistant.util import slugify
 
 from .const import (
     CONF_BUFFER_SECONDS,
@@ -27,15 +27,6 @@ from .const import (
     DEFAULT_PREFETCH_INTERVAL,
     DOMAIN,
 )
-
-
-def to_snake_case(text: str) -> str:
-    """Convert a string to snake_case."""
-    text = text.replace(" ", "_").replace("-", "_")
-    text = re.sub(r"[^\w]", "", text)
-    text = re.sub(r"_+", "_", text)
-    text = text.lower()
-    return text.strip("_")
 
 
 def _options_schema(
@@ -123,12 +114,11 @@ class TimeShifterConfigFlow(ConfigFlow, domain=DOMAIN):
             sensor_name = user_input[CONF_SENSOR_NAME].strip()
             if not sensor_name:
                 errors[CONF_SENSOR_NAME] = "name_required"
+            elif not slugify(sensor_name):
+                errors[CONF_SENSOR_NAME] = "invalid_name"
             else:
-                snake_case_name = to_snake_case(sensor_name)
-                if not snake_case_name:
-                    errors[CONF_SENSOR_NAME] = "invalid_name"
-                else:
-                    user_input[CONF_SENSOR_NAME] = snake_case_name
+                # Keep the human-readable name; entity_id is derived in the sensor.
+                user_input[CONF_SENSOR_NAME] = sensor_name
 
             if not errors:
                 await self.async_set_unique_id(f"{entity_id}_shifted")

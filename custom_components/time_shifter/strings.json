@@ -13,7 +13,7 @@
                 },
                 "data_description": {
                     "source_entity": "The entity to shift in time",
-                    "sensor_name": "Custom name for the shifted sensor (will be converted to snake_case)",
+                    "sensor_name": "Friendly name for the shifted sensor. The entity_id is built from the source entity id plus a slug of this name.",
                     "offset_hours": "How many hours in the past to show the state (must be positive)",
                     "prefetch_interval": "How often to fetch new historical data",
                     "buffer_seconds": "Extra buffer to ensure smooth transitions"

@@ -1,5 +1,7 @@
 # Time Shifter
 
+**Version:** 0.2.1
+
 A Home Assistant custom integration that creates time-shifted sensors. Report sensor states from the past with configurable offsets.
 
 ## Overview
@@ -43,7 +45,7 @@ This integration is not yet available in HACS but may be added in the future.
 ### Parameters
 
 - **Source Entity** (required): The entity to shift in time. Uses Home Assistant's standard entity picker, which searches by `entity_id` and friendly name (multi-term queries like `z01 temp` work against ids such as `sensor.socket_z01_temperature`).
-- **Sensor Name** (required): Custom name for the shifted sensor (automatically converted to snake_case)
+- **Sensor Name** (required): Friendly name for the shifted sensor (e.g. `Energy 1h ago`). The `entity_id` is built as `sensor.<source_object_id>_<slugified_name>`
 - **Offset Hours** (required): How many hours in the past to show the state (must be positive)
 - **Prefetch Interval** (optional, default: 5 minutes): How often to fetch new historical data
 - **Buffer** (optional, default: 60 seconds): Extra buffer to ensure smooth transitions between prefetch cycles
@@ -54,13 +56,13 @@ Offset, prefetch, and buffer can be changed later via **Configure** on the integ
 
 **Scenario**: You want to create a sensor that shows what your temperature sensor read 1 hour ago.
 
-1. **Source Entity**: `sensor.temperature`
-2. **Sensor Name**: `temperature_1h_ago`
+1. **Source Entity**: `sensor.socket_z03_energy`
+2. **Sensor Name**: `Energy 1h ago`
 3. **Offset Hours**: `1`
 4. **Prefetch Interval**: `5` (minutes)
 5. **Buffer**: `60` (seconds)
 
-**Result**: A new sensor `sensor.temperature_1h_ago` will be created that always shows the temperature from 1 hour ago, on the same device as the source when applicable.
+**Result**: A sensor named **Energy 1h ago** with `entity_id` `sensor.socket_z03_energy_energy_1h_ago` that always shows the value from 1 hour ago, on the same device as the source when applicable.
 
 ### How It Works
 
@@ -130,6 +132,7 @@ When releasing a change, bump the version in all of these files to the same valu
 - `.version`
 - `custom_components/time_shifter/manifest.json` (`version` field)
 - `custom_components/time_shifter/const.py` (`VERSION` constant)
+- `README.md` (`**Version:**` at the top)
 - `VERSION.md` (changelog entry)
 
 Follow [Semantic Versioning](https://semver.org/). See `.agent/workflows/update-version.md` for the full checklist.

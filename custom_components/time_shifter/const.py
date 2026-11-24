@@ -1,7 +1,7 @@
 """Constants for the Time Shifter integration."""
 
 DOMAIN = "time_shifter"
-VERSION = "0.2.0"
+VERSION = "0.2.1"
 
 # Configuration keys
 CONF_SOURCE_ENTITY = "source_entity"

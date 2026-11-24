@@ -21,6 +21,7 @@ Use this workflow whenever you make changes to the integration that should resul
    - `.version` — single source of truth (one line, e.g. `0.2.0`)
    - `custom_components/time_shifter/manifest.json` — `"version"` field
    - `custom_components/time_shifter/const.py` — `VERSION` constant
+   - `README.md` — `**Version:** X.Y.Z` at the top
 
 3. **Update the changelog**
    - Edit `VERSION.md`
@@ -28,7 +29,7 @@ Use this workflow whenever you make changes to the integration that should resul
    - Follow the existing Keep a Changelog format
 
 4. **Verify**
-   - Confirm `.version`, `manifest.json`, and `const.py` all match
+   - Confirm `.version`, `manifest.json`, `const.py`, and `README.md` all match
    - Review the changelog entry
 
 5. **Commit** (when the user asks)

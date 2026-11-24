@@ -5,6 +5,12 @@ All notable changes to the Time Shifter integration will be documented in this f
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] - 2026-03-24
+
+### Fixed
+- Sensor name is kept as a friendly name (e.g. `Energy 1h ago`) instead of being stored as snake_case
+- Entity ID is now `sensor.<source_object_id>_<slugified_name>` (e.g. `sensor.socket_z03_energy_energy_1h_ago`)
+
 ## [0.2.0] - 2026-03-24
 
 ### Added

@@ -12,6 +12,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.util import dt as dt_util
+from homeassistant.util import slugify
 
 from . import TimeShifterConfigEntry
 from .const import (
@@ -97,8 +98,15 @@ class TimeShiftedSensor(SensorEntity):
         self._state_cache: list[tuple[datetime, State]] = []
         self._unsub_prefetch = None
 
+        # Friendly name stays as entered (e.g. "Energy 1h ago").
         self._attr_name = sensor_name
         self._attr_unique_id = f"{entry_id}_shifted"
+
+        # entity_id: sensor.<source_object_id>_<slugified_name>
+        # e.g. sensor.socket_z03_energy_energy_1h_ago
+        source_object_id = source_entity.split(".", 1)[-1]
+        object_id = f"{source_object_id}_{slugify(sensor_name)}"
+        self.entity_id = f"sensor.{object_id}"
 
     async def async_added_to_hass(self) -> None:
         """Run when entity about to be added to hass."""

@@ -1,0 +1,53 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "Set up Time Shifter",
+                "description": "Create a time-shifted sensor that shows historical states",
+                "data": {
+                    "source_entity": "Source Entity",
+                    "sensor_name": "Sensor Name",
+                    "offset_hours": "Offset (hours ago)",
+                    "prefetch_interval": "Prefetch Interval (minutes)",
+                    "buffer_seconds": "Buffer (seconds)"
+                },
+                "data_description": {
+                    "source_entity": "The entity to shift in time",
+                    "sensor_name": "Custom name for the shifted sensor (will be converted to snake_case)",
+                    "offset_hours": "How many hours in the past to show the state (must be positive)",
+                    "prefetch_interval": "How often to fetch new historical data",
+                    "buffer_seconds": "Extra buffer to ensure smooth transitions"
+                }
+            }
+        },
+        "error": {
+            "entity_not_found": "The selected entity does not exist",
+            "offset_must_be_positive": "Offset must be greater than 0",
+            "prefetch_must_be_positive": "Prefetch interval must be greater than 0",
+            "buffer_must_be_non_negative": "Buffer must be 0 or greater",
+            "name_required": "Sensor name is required",
+            "invalid_name": "Sensor name contains only invalid characters"
+        },
+        "abort": {
+            "already_configured": "This entity is already configured with a time shift"
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Configure Time Shifter",
+                "description": "Update time shift configuration",
+                "data": {
+                    "offset_hours": "Offset (hours ago)",
+                    "prefetch_interval": "Prefetch Interval (minutes)",
+                    "buffer_seconds": "Buffer (seconds)"
+                }
+            }
+        },
+        "error": {
+            "offset_must_be_positive": "Offset must be greater than 0",
+            "prefetch_must_be_positive": "Prefetch interval must be greater than 0",
+            "buffer_must_be_non_negative": "Buffer must be 0 or greater"
+        }
+    }
+}

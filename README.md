@@ -1,6 +1,6 @@
 # Time Shifter
 
-**Version:** 0.2.1
+**Version:** 0.3.0
 
 A Home Assistant custom integration that creates time-shifted sensors. Report sensor states from the past with configurable offsets.
 
@@ -45,24 +45,26 @@ This integration is not yet available in HACS but may be added in the future.
 ### Parameters
 
 - **Source Entity** (required): The entity to shift in time. Uses Home Assistant's standard entity picker, which searches by `entity_id` and friendly name (multi-term queries like `z01 temp` work against ids such as `sensor.socket_z01_temperature`).
-- **Sensor Name** (required): Friendly name for the shifted sensor (e.g. `Energy 1h ago`). The `entity_id` is built as `sensor.<source_object_id>_<slugified_name>`
 - **Offset Hours** (required): How many hours in the past to show the state (must be positive)
 - **Prefetch Interval** (optional, default: 5 minutes): How often to fetch new historical data
 - **Buffer** (optional, default: 60 seconds): Extra buffer to ensure smooth transitions between prefetch cycles
+
+Name and `entity_id` are generated automatically:
+- **Name**: `<source name> <N> hours ago`
+- **Entity ID**: `sensor.<source_object_id>_<N>_hours_ago`
 
 Offset, prefetch, and buffer can be changed later via **Configure** on the integration entry.
 
 ### Example Setup
 
-**Scenario**: You want to create a sensor that shows what your temperature sensor read 1 hour ago.
+**Scenario**: You want to create a sensor that shows what your energy sensor read 1 hour ago.
 
-1. **Source Entity**: `sensor.socket_z03_energy`
-2. **Sensor Name**: `Energy 1h ago`
-3. **Offset Hours**: `1`
-4. **Prefetch Interval**: `5` (minutes)
-5. **Buffer**: `60` (seconds)
+1. **Source Entity**: `sensor.socket_z03_energy` (name: `Energy`)
+2. **Offset Hours**: `1`
+3. **Prefetch Interval**: `5` (minutes)
+4. **Buffer**: `60` (seconds)
 
-**Result**: A sensor named **Energy 1h ago** with `entity_id` `sensor.socket_z03_energy_energy_1h_ago` that always shows the value from 1 hour ago, on the same device as the source when applicable.
+**Result**: A sensor named **Energy 1 hours ago** with `entity_id` `sensor.socket_z03_energy_1_hours_ago`, on the same device as the source when applicable.
 
 ### How It Works
 

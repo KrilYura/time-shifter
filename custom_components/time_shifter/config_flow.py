@@ -14,18 +14,17 @@ from homeassistant.config_entries import (
 from homeassistant.core import callback
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers import selector
-from homeassistant.util import slugify
 
 from .const import (
     CONF_BUFFER_SECONDS,
     CONF_OFFSET_HOURS,
     CONF_PREFETCH_INTERVAL,
-    CONF_SENSOR_NAME,
     CONF_SOURCE_ENTITY,
     DEFAULT_BUFFER_SECONDS,
     DEFAULT_OFFSET_HOURS,
     DEFAULT_PREFETCH_INTERVAL,
     DOMAIN,
+    format_offset_label,
 )
 
 
@@ -93,7 +92,7 @@ def _validate_options(user_input: dict[str, Any]) -> dict[str, str]:
 class TimeShifterConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Time Shifter."""
 
-    VERSION = 2
+    VERSION = 3
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -111,27 +110,18 @@ class TimeShifterConfigFlow(ConfigFlow, domain=DOMAIN):
 
             errors.update(_validate_options(user_input))
 
-            sensor_name = user_input[CONF_SENSOR_NAME].strip()
-            if not sensor_name:
-                errors[CONF_SENSOR_NAME] = "name_required"
-            elif not slugify(sensor_name):
-                errors[CONF_SENSOR_NAME] = "invalid_name"
-            else:
-                # Keep the human-readable name; entity_id is derived in the sensor.
-                user_input[CONF_SENSOR_NAME] = sensor_name
-
             if not errors:
                 await self.async_set_unique_id(f"{entity_id}_shifted")
                 self._abort_if_unique_id_configured()
 
+                offset_hours = user_input[CONF_OFFSET_HOURS]
                 return self.async_create_entry(
-                    title=f"{entity_id} (shifted)",
+                    title=f"{entity_id} ({format_offset_label(offset_hours)} hours ago)",
                     data={
-                        CONF_SOURCE_ENTITY: user_input[CONF_SOURCE_ENTITY],
-                        CONF_SENSOR_NAME: user_input[CONF_SENSOR_NAME],
+                        CONF_SOURCE_ENTITY: entity_id,
                     },
                     options={
-                        CONF_OFFSET_HOURS: user_input[CONF_OFFSET_HOURS],
+                        CONF_OFFSET_HOURS: offset_hours,
                         CONF_PREFETCH_INTERVAL: user_input.get(
                             CONF_PREFETCH_INTERVAL, DEFAULT_PREFETCH_INTERVAL
                         ),
@@ -145,11 +135,6 @@ class TimeShifterConfigFlow(ConfigFlow, domain=DOMAIN):
             {
                 vol.Required(CONF_SOURCE_ENTITY): selector.EntitySelector(
                     selector.EntitySelectorConfig()
-                ),
-                vol.Required(CONF_SENSOR_NAME): selector.TextSelector(
-                    selector.TextSelectorConfig(
-                        type=selector.TextSelectorType.TEXT,
-                    )
                 ),
             }
         ).extend(_options_schema().schema)

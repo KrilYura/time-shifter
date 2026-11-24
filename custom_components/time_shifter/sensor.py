@@ -12,18 +12,18 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.util import dt as dt_util
-from homeassistant.util import slugify
 
 from . import TimeShifterConfigEntry
 from .const import (
     CONF_BUFFER_SECONDS,
     CONF_OFFSET_HOURS,
     CONF_PREFETCH_INTERVAL,
-    CONF_SENSOR_NAME,
     CONF_SOURCE_ENTITY,
     DEFAULT_BUFFER_SECONDS,
     DEFAULT_OFFSET_HOURS,
     DEFAULT_PREFETCH_INTERVAL,
+    shifted_entity_object_id,
+    shifted_friendly_name,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -36,7 +36,6 @@ async def async_setup_entry(
 ) -> None:
     """Set up Time Shifter sensor from a config entry."""
     source_entity = config_entry.data[CONF_SOURCE_ENTITY]
-    sensor_name = config_entry.data[CONF_SENSOR_NAME]
     options = config_entry.options
 
     offset_hours = options.get(CONF_OFFSET_HOURS, DEFAULT_OFFSET_HOURS)
@@ -46,9 +45,8 @@ async def async_setup_entry(
     buffer_seconds = options.get(CONF_BUFFER_SECONDS, DEFAULT_BUFFER_SECONDS)
 
     _LOGGER.debug(
-        "Setting up shifted sensor '%s' for %s with offset=%s hours, "
+        "Setting up shifted sensor for %s with offset=%s hours, "
         "prefetch=%s min, buffer=%s sec",
-        sensor_name,
         source_entity,
         offset_hours,
         prefetch_interval,
@@ -61,7 +59,6 @@ async def async_setup_entry(
                 hass,
                 config_entry.entry_id,
                 source_entity,
-                sensor_name,
                 offset_hours,
                 prefetch_interval,
                 buffer_seconds,
@@ -82,7 +79,6 @@ class TimeShiftedSensor(SensorEntity):
         hass: HomeAssistant,
         entry_id: str,
         source_entity: str,
-        sensor_name: str,
         offset_hours: float,
         prefetch_interval: int,
         buffer_seconds: int,
@@ -98,15 +94,18 @@ class TimeShiftedSensor(SensorEntity):
         self._state_cache: list[tuple[datetime, State]] = []
         self._unsub_prefetch = None
 
-        # Friendly name stays as entered (e.g. "Energy 1h ago").
-        self._attr_name = sensor_name
-        self._attr_unique_id = f"{entry_id}_shifted"
+        source_state = hass.states.get(source_entity)
+        source_name = (
+            source_state.name
+            if source_state and source_state.name
+            else source_entity.split(".", 1)[-1]
+        )
 
-        # entity_id: sensor.<source_object_id>_<slugified_name>
-        # e.g. sensor.socket_z03_energy_energy_1h_ago
-        source_object_id = source_entity.split(".", 1)[-1]
-        object_id = f"{source_object_id}_{slugify(sensor_name)}"
-        self.entity_id = f"sensor.{object_id}"
+        # Name: "<source name> N hours ago"
+        # entity_id: sensor.<source_object_id>_N_hours_ago
+        self._attr_name = shifted_friendly_name(source_name, offset_hours)
+        self._attr_unique_id = f"{entry_id}_shifted"
+        self.entity_id = f"sensor.{shifted_entity_object_id(source_entity, offset_hours)}"
 
     async def async_added_to_hass(self) -> None:
         """Run when entity about to be added to hass."""

@@ -12,7 +12,6 @@ from .const import (
     CONF_BUFFER_SECONDS,
     CONF_OFFSET_HOURS,
     CONF_PREFETCH_INTERVAL,
-    CONF_SENSOR_NAME,
     CONF_SOURCE_ENTITY,
     DEFAULT_BUFFER_SECONDS,
     DEFAULT_OFFSET_HOURS,
@@ -46,16 +45,17 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         "Migrating Time Shifter config entry from version %s", entry.version
     )
 
-    if entry.version > 2:
+    if entry.version > 3:
         _LOGGER.error(
             "Unable to migrate Time Shifter entry from version %s", entry.version
         )
         return False
 
-    if entry.version == 1:
-        data = dict(entry.data)
-        options: dict[str, Any] = dict(entry.options)
+    data = dict(entry.data)
+    options: dict[str, Any] = dict(entry.options)
+    version = entry.version
 
+    if version < 2:
         for key, default in (
             (CONF_OFFSET_HOURS, DEFAULT_OFFSET_HOURS),
             (CONF_PREFETCH_INTERVAL, DEFAULT_PREFETCH_INTERVAL),
@@ -65,23 +65,18 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 options[key] = data.pop(key)
             elif key not in options:
                 options[key] = default
+        version = 2
 
-        source_entity = data[CONF_SOURCE_ENTITY]
-        sensor_name = data.get(CONF_SENSOR_NAME)
-        if not sensor_name:
-            sensor_name = f"{source_entity.split('.', 1)[-1]}_shifted"
+    if version < 3:
+        # Drop custom sensor_name; name/entity_id are generated from source + offset.
+        data = {CONF_SOURCE_ENTITY: data[CONF_SOURCE_ENTITY]}
+        version = 3
 
-        new_data = {
-            CONF_SOURCE_ENTITY: source_entity,
-            CONF_SENSOR_NAME: sensor_name,
-        }
-
-        hass.config_entries.async_update_entry(
-            entry,
-            data=new_data,
-            options=options,
-            version=2,
-        )
-        _LOGGER.info("Migrated Time Shifter config entry to version 2")
-
+    hass.config_entries.async_update_entry(
+        entry,
+        data=data,
+        options=options,
+        version=version,
+    )
+    _LOGGER.info("Migrated Time Shifter config entry to version %s", version)
     return True

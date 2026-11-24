@@ -3,17 +3,15 @@
         "step": {
             "user": {
                 "title": "Set up Time Shifter",
-                "description": "Create a time-shifted sensor that shows historical states",
+                "description": "Create a time-shifted sensor that shows historical states. Name and entity_id are generated from the source entity and offset.",
                 "data": {
                     "source_entity": "Source Entity",
-                    "sensor_name": "Sensor Name",
                     "offset_hours": "Offset (hours ago)",
                     "prefetch_interval": "Prefetch Interval (minutes)",
                     "buffer_seconds": "Buffer (seconds)"
                 },
                 "data_description": {
                     "source_entity": "The entity to shift in time",
-                    "sensor_name": "Friendly name for the shifted sensor. The entity_id is built from the source entity id plus a slug of this name.",
                     "offset_hours": "How many hours in the past to show the state (must be positive)",
                     "prefetch_interval": "How often to fetch new historical data",
                     "buffer_seconds": "Extra buffer to ensure smooth transitions"
@@ -24,9 +22,7 @@
             "entity_not_found": "The selected entity does not exist",
             "offset_must_be_positive": "Offset must be greater than 0",
             "prefetch_must_be_positive": "Prefetch interval must be greater than 0",
-            "buffer_must_be_non_negative": "Buffer must be 0 or greater",
-            "name_required": "Sensor name is required",
-            "invalid_name": "Sensor name contains only invalid characters"
+            "buffer_must_be_non_negative": "Buffer must be 0 or greater"
         },
         "abort": {
             "already_configured": "This entity is already configured with a time shift"

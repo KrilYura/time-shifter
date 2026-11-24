@@ -6,7 +6,11 @@ import logging
 from typing import Any
 
 from homeassistant.components.recorder import get_instance, history as recorder_history
-from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntity,
+    SensorStateClass,
+)
 from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -254,6 +258,14 @@ class TimeShiftedSensor(SensorEntity):
     def device_class(self) -> SensorDeviceClass | str | None:
         """Return device class from source entity if available."""
         return self._source_attr("device_class")
+
+    @property
+    def state_class(self) -> SensorStateClass | str | None:
+        """Return state class from source entity if available.
+
+        Required for Energy dashboard (e.g. total_increasing).
+        """
+        return self._source_attr("state_class")
 
     @property
     def native_unit_of_measurement(self) -> str | None:

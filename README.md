@@ -1,6 +1,6 @@
 # Time Shifter
 
-**Version:** 0.3.1
+**Version:** 0.3.2
 
 A Home Assistant custom integration that creates time-shifted sensors. Report sensor states from the past with configurable offsets.
 

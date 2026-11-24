@@ -6,12 +6,13 @@
   ],
   "config_flow": true,
   "dependencies": [
-    "history"
+    "history",
+    "recorder"
   ],
   "documentation": "https://github.com/ykril/time_shifter",
   "homeassistant": "2024.3.0",
   "iot_class": "calculated",
   "issue_tracker": "https://github.com/ykril/time_shifter/issues",
   "requirements": [],
-  "version": "0.3.0"
+  "version": "0.3.1"
 }

@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import logging
 from typing import Any
 
-from homeassistant.components import history
+from homeassistant.components.recorder import get_instance, history as recorder_history
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import entity_registry as er
@@ -141,6 +141,9 @@ class TimeShiftedSensor(SensorEntity):
             prefetch_delta = timedelta(minutes=self._prefetch_interval)
             buffer_delta = timedelta(seconds=self._buffer_seconds)
 
+            # Window around the shifted time. include_start_time_state finds the
+            # last known state at/before start_time even when nothing changes
+            # inside the short prefetch window.
             start_time = current_time - offset_delta
             end_time = start_time + prefetch_delta + buffer_delta
 
@@ -152,21 +155,21 @@ class TimeShiftedSensor(SensorEntity):
                 self._offset_hours,
             )
 
-            states_dict = await self.hass.async_add_executor_job(
-                history.get_significant_states,
+            states_dict = await get_instance(self.hass).async_add_executor_job(
+                recorder_history.get_significant_states,
                 self.hass,
                 start_time,
                 end_time,
                 [self._source_entity],
-                None,
-                True,  # include_start_time_state
             )
 
             states = states_dict.get(self._source_entity, [])
 
             if states:
                 self._state_cache = [
-                    (state.last_updated, state) for state in states
+                    (state.last_updated, state)
+                    for state in states
+                    if isinstance(state, State)
                 ]
                 self._state_cache.sort(key=lambda x: x[0])
 
@@ -176,6 +179,7 @@ class TimeShiftedSensor(SensorEntity):
                     self._source_entity,
                 )
             else:
+                self._state_cache = []
                 _LOGGER.warning(
                     "No historical states found for %s in time range %s to %s",
                     self._source_entity,
@@ -183,12 +187,13 @@ class TimeShiftedSensor(SensorEntity):
                     end_time,
                 )
 
-            self.async_write_ha_state()
-
         except Exception:
+            self._state_cache = []
             _LOGGER.exception(
                 "Error prefetching states for %s", self._source_entity
             )
+
+        self.async_write_ha_state()
 
     def _get_shifted_state(self) -> State | None:
         """Get the state at the shifted time."""
